@@ -1,21 +1,26 @@
 package pl.ryszardszwajlik.research.gcs.performance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.map.MultiKeyMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import pl.ryszardszwajlik.research.gcs.performance.data.TestBucket;
 import pl.ryszardszwajlik.research.gcs.performance.data.TestFile;
 import pl.ryszardszwajlik.research.gcs.performance.stats.MultiKeyMapPrinter;
-import pl.ryszardszwajlik.research.gcs.performance.storage.MeasuredStorage;
 import pl.ryszardszwajlik.research.gcs.performance.stats.Stat;
+import pl.ryszardszwajlik.research.gcs.performance.storage.MeasuredStorage;
 
 @SpringBootApplication
 public class PerformanceApplication {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceApplication.class);
+    @Value("${repeats}")
+    private Integer repeats;
 
     private final MeasuredStorage measuredStorage;
     private final MultiKeyMapPrinter multiKeyMapPrinter;
@@ -31,18 +36,21 @@ public class PerformanceApplication {
     }
 
     @PostConstruct
-    void performTest() {
-        boolean stored = measuredStorage.storeFile(TestFile.FILE_1MB_TEXT, TestBucket.REGION_EUROPE_WEST2);
-        if (stored) {
-            logger.info("File stored successfully");
-        } else {
-            logger.error("An error occured storing the file");
+    void performTest() throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        List<Callable<Boolean>> callables = new ArrayList<>();
+        for (int i = 0; i < repeats; i++) {
+            for (TestFile testFile : TestFile.values()) {
+                for (TestBucket testBucket : TestBucket.values()) {
+                    callables.add(() -> measuredStorage.storeFile(testFile, testBucket));
+                }
+            }
         }
+        executorService.invokeAll(callables);
 
         MultiKeyMap<String, Stat> statistics = measuredStorage.getStatistics();
 
-        multiKeyMapPrinter.print(statistics);
+        multiKeyMapPrinter.print(statistics, "storeFile");
     }
-
 
 }

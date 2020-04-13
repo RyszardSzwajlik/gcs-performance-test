@@ -3,9 +3,6 @@ package pl.ryszardszwajlik.research.gcs.performance.data;
 import java.io.IOException;
 
 public enum TestFile {
-    FILE_1MB_TEXT("1mb.txt"),
-    FILE_5MB_TEXT("5mb.txt"),
-    FILE_10MB_TEXT("10mb.txt"),
     FILE_1MB_ZIP("1mb.zip"),
     FILE_5MB_ZIP("5mb.zip"),
     FILE_10MB_ZIP("10mb.zip"),
