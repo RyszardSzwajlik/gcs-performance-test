@@ -1,6 +1,7 @@
 package pl.ryszardszwajlik.research.gcs.performance.data;
 
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public enum TestFile {
     FILE_1MB_ZIP("1mb.zip"),
@@ -14,8 +15,9 @@ public enum TestFile {
     TestFile(String fileName) {
         this.fileName = fileName;
         try {
-            this.content = this.getClass().getClassLoader().getResourceAsStream(fileName).readAllBytes();
-        } catch (IOException e) {
+            this.content = Files
+                    .readAllBytes(Paths.get(this.getClass().getClassLoader().getResource(fileName).toURI()));
+        } catch (Exception e) {
             throw new RuntimeException("Couldn't read file", e);
         }
     }
