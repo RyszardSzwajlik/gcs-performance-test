@@ -1,10 +1,5 @@
 package pl.ryszardszwajlik.research.gcs.performance;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,16 +32,16 @@ public class PerformanceApplication {
 
     @PostConstruct
     void performTest() throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-        List<Callable<Boolean>> callables = new ArrayList<>();
+//        ExecutorService executorService = Executors.newFixedThreadPool(4);
+//        List<Callable<Boolean>> callables = new ArrayList<>();
         for (int i = 0; i < repeats; i++) {
             for (TestFile testFile : TestFile.values()) {
                 for (TestBucket testBucket : TestBucket.values()) {
-                    callables.add(() -> measuredStorage.storeFile(testFile, testBucket));
+                    measuredStorage.storeFile(testFile, testBucket);
                 }
             }
         }
-        executorService.invokeAll(callables);
+//        executorService.invokeAll(callables);
 
         MultiKeyMap<String, Stat> statistics = measuredStorage.getStatistics();
 
